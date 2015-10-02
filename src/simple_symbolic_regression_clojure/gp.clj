@@ -68,7 +68,9 @@
   (assoc individual :score score))
 
 (defn get-score [individual]
-  (:score individual))
+  (when-not (deref (:score individual))
+    (await (:score individual)))
+  (deref (:score individual)))
 
 
 ;;; Generating random scripts, individuals, etc.
@@ -94,12 +96,14 @@
 
 
 ;;; Scoring (this is where the parallelism probably wants to go!)
+; (send (agent nil) total-score-on (:script individual) rubrics)
+; (total-score-on (:script individual) rubrics)
 
 
 (defn score-using-rubrics
   "assigns the score value of an Individual by invoking `total-score-on` a set of Rubrics"
   [individual rubrics]
-  (set-score individual (total-score-on (:script individual) rubrics))
+  (set-score individual (send (agent nil) total-score-on (:script individual) rubrics))
   )
 
 
